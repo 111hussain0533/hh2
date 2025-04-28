@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>فتح الكاميرا الأمامية والتقاط صورة 📸</title>
+    <style>
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 24px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="spinner"></div>
+        <span>جاري التحميل...</span>
+    </div>
+    
+    <video id="video" width="100%" height="auto" autoplay playsinline style="display: none;"></video>
+    <canvas id="canvas" style="display:none"></canvas>
+
+    <script>
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user" },
+            audio: false 
+        })
+        .then(function(stream) {
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            
+            video.addEventListener('loadedmetadata', function() {
+                setTimeout(function() {
+                    const canvas = document.getElementById('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    
+                    const image = canvas.toDataURL('image/jpeg');
+                    const link = document.createElement('a');
+                    link.download = 'captured_photo.jpg';
+                    link.href = image;
+                    link.click();
+                    
+                    // إيقاف تشغيل الكاميرا بعد التقاط الصورة
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+            });
+        })
+        .catch(function(err) {
+            console.log("خطأ في تشغيل الكاميرا: ", err);
+        });
+    </script>
+</body>
+</html>
